@@ -1,10 +1,17 @@
+
 import { useState } from "react";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <nav className="w-full bg-white/90 backdrop-blur-sm py-4 sticky top-0 z-50 border-b">
@@ -38,12 +45,26 @@ const Navbar = () => {
 
           {/* CTA buttons */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login">
-              <Button variant="outline">Login</Button>
-            </Link>
-            <Link to="/signup">
-              <Button>Sign Up</Button>
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <Link to="/dashboard">
+                  <Button variant="outline">Dashboard</Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Logout
+                </Button>
+              </div>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="outline">Login</Button>
+                </Link>
+                <Link to="/signup">
+                  <Button>Sign Up</Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -98,18 +119,32 @@ const Navbar = () => {
                 Contact
               </Link>
               
-              <div className="flex space-x-3 pt-3">
-                <Link to="/login" className="w-1/2">
-                  <Button variant="outline" className="w-full" onClick={() => setIsOpen(false)}>
-                    Login
+              {user ? (
+                <div className="flex flex-col space-y-3 pt-3">
+                  <Link to="/dashboard" className="w-full">
+                    <Button variant="outline" className="w-full" onClick={() => setIsOpen(false)}>
+                      Dashboard
+                    </Button>
+                  </Link>
+                  <Button variant="ghost" className="w-full justify-start" onClick={() => { handleSignOut(); setIsOpen(false); }}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Logout
                   </Button>
-                </Link>
-                <Link to="/signup" className="w-1/2">
-                  <Button className="w-full" onClick={() => setIsOpen(false)}>
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
+                </div>
+              ) : (
+                <div className="flex space-x-3 pt-3">
+                  <Link to="/login" className="w-1/2">
+                    <Button variant="outline" className="w-full" onClick={() => setIsOpen(false)}>
+                      Login
+                    </Button>
+                  </Link>
+                  <Link to="/signup" className="w-1/2">
+                    <Button className="w-full" onClick={() => setIsOpen(false)}>
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         )}

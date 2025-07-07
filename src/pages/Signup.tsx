@@ -1,11 +1,13 @@
+
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Signup = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -17,6 +19,8 @@ const Signup = () => {
     confirmPassword: "",
     agreeTerms: false
   });
+  const { signUp } = useAuth();
+  const navigate = useNavigate();
   
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
@@ -26,7 +30,7 @@ const Signup = () => {
     });
   };
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Simple validation
@@ -50,16 +54,36 @@ const Signup = () => {
     
     setIsLoading(true);
     
-    // Simulate signup request
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { error } = await signUp(
+        formData.email, 
+        formData.password, 
+        formData.firstName, 
+        formData.lastName
+      );
+      
+      if (error) {
+        toast({
+          title: "Signup failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Account created!",
+          description: "Please check your email to confirm your account.",
+        });
+        navigate("/login");
+      }
+    } catch (error) {
       toast({
-        title: "Account created!",
-        description: "Your account has been created successfully.",
+        title: "Signup failed",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
       });
-      // In a real app, you'd redirect the user to the login page or dashboard
-      window.location.href = "/dashboard";
-    }, 1500);
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   return (
