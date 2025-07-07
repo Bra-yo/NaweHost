@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,8 +50,8 @@ const ContactForm = () => {
                   <p className="text-gray-600">
                     Talk to our sales team about custom configurations or enterprise plans.
                   </p>
-                  <a href="mailto:sales@serverstrata.com" className="text-primary hover:underline mt-1 inline-block">
-                    sales@serverstrata.com
+                  <a href="mailto:sales@nawehost.com" className="text-primary hover:underline mt-1 inline-block">
+                    sales@nawehost.com
                   </a>
                 </div>
                 
@@ -61,8 +60,8 @@ const ContactForm = () => {
                   <p className="text-gray-600">
                     Need technical assistance? Our support team is available 24/7/365.
                   </p>
-                  <a href="mailto:support@serverstrata.com" className="text-primary hover:underline mt-1 inline-block">
-                    support@serverstrata.com
+                  <a href="mailto:support@nawehost.com" className="text-primary hover:underline mt-1 inline-block">
+                    support@nawehost.com
                   </a>
                 </div>
                 

@@ -45,9 +45,9 @@ const Login = () => {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center mb-6">
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+              <span className="text-white font-bold text-lg">N</span>
             </div>
-            <span className="font-bold text-xl text-gray-900 ml-2">ServerStrata</span>
+            <span className="font-bold text-xl text-gray-900 ml-2">NaweHost</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
           <p className="text-gray-600 mt-2">Log in to your account to manage your servers</p>

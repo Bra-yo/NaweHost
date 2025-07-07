@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Github, Twitter, Linkedin, Facebook } from "lucide-react";
 
@@ -12,9 +11,9 @@ const Footer = () => {
           <div>
             <Link to="/" className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-                <span className="text-white font-bold text-lg">S</span>
+                <span className="text-white font-bold text-lg">N</span>
               </div>
-              <span className="font-bold text-xl text-gray-900">ServerStrata</span>
+              <span className="font-bold text-xl text-gray-900">NaweHost</span>
             </Link>
             <p className="text-gray-600 text-sm mb-4">
               High-performance bare metal servers for your most demanding workloads.
@@ -101,7 +100,7 @@ const Footer = () => {
         
         <div className="border-t border-gray-200 mt-10 pt-6">
           <p className="text-center text-gray-500 text-sm">
-            © {year} ServerStrata. All rights reserved.
+            © {year} NaweHost. All rights reserved.
           </p>
         </div>
       </div>

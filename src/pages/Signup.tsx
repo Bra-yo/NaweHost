@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -69,12 +68,12 @@ const Signup = () => {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center mb-6">
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+              <span className="text-white font-bold text-lg">N</span>
             </div>
-            <span className="font-bold text-xl text-gray-900 ml-2">ServerStrata</span>
+            <span className="font-bold text-xl text-gray-900 ml-2">NaweHost</span>
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Create an account</h1>
-          <p className="text-gray-600 mt-2">Sign up to get started with ServerStrata</p>
+          <p className="text-gray-600 mt-2">Sign up to get started with NaweHost</p>
         </div>
         
         <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-200">

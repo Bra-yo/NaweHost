@@ -12,9 +12,9 @@ const Navbar = () => {
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-lg">S</span>
+              <span className="text-white font-bold text-lg">N</span>
             </div>
-            <span className="font-bold text-xl text-gray-900">ServerStrata</span>
+            <span className="font-bold text-xl text-gray-900">NaweHost</span>
           </Link>
           
           {/* Desktop navigation */}
