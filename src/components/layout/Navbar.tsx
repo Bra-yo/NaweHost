@@ -18,9 +18,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4 md:px-6">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-md flex items-center justify-center">
-              <span className="text-white font-bold text-lg">N</span>
-            </div>
+            <img src="/src/assets/nawehost-logo.png" alt="NaweHost" className="w-8 h-8 rounded-md" />
             <span className="font-bold text-xl text-gray-900">NaweHost</span>
           </Link>
           
