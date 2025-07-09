@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,6 @@ import { Loader2, Eye, EyeOff } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Separator } from "@/components/ui/separator";
-import ReCAPTCHA from "react-google-recaptcha";
 import naweHostLogo from "@/assets/nawehost-logo.png";
 
 const Login = () => {
@@ -17,23 +16,11 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { signIn, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!captchaToken) {
-      toast({
-        title: "Captcha required",
-        description: "Please complete the captcha verification.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
@@ -152,19 +139,10 @@ const Login = () => {
                 </label>
               </div>
               
-              <div className="flex justify-center">
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey="YOUR_RECAPTCHA_SITE_KEY"
-                  onChange={setCaptchaToken}
-                  onExpired={() => setCaptchaToken(null)}
-                />
-              </div>
-              
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isLoading || !captchaToken}
+                disabled={isLoading}
               >
                 {isLoading ? (
                   <>
