@@ -1,13 +1,51 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const { user, signOut } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile();
+    } else {
+      setUserProfile(null);
+    }
+  }, [user]);
+
+  const fetchUserProfile = async () => {
+    if (!user) return;
+    
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('first_name, last_name')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (!error && data) {
+      setUserProfile(data);
+    }
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 17) return "Good afternoon";
+    return "Good evening";
+  };
+
+  const getUserName = () => {
+    if (userProfile?.first_name) {
+      return userProfile.first_name;
+    }
+    return user?.email?.split('@')[0] || 'User';
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -45,6 +83,10 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
+                <div className="text-sm text-gray-700">
+                  <span className="font-medium">{getGreeting()} {getUserName()},</span>
+                  <span className="text-gray-500 ml-1">Welcome back!</span>
+                </div>
                 <Link to="/dashboard">
                   <Button variant="outline">Dashboard</Button>
                 </Link>
