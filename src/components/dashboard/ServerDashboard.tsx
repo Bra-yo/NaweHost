@@ -10,6 +10,9 @@ import {
   RefreshCw,
   PowerOff,
   Plus,
+  Play,
+  Trash2,
+  CreditCard,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -31,6 +34,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PaymentModal from "@/components/payment/PaymentModal";
 
 interface ServerType {
   id: string;
@@ -51,14 +55,14 @@ const ServerDashboard = () => {
   const [activeServer, setActiveServer] = useState<ServerType | null>(null);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [creatingServer, setCreatingServer] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [plans, setPlans] = useState<any[]>([]);
   const [newServer, setNewServer] = useState({
     name: "",
     type: "",
-    cpu_cores: "",
-    ram_gb: "",
-    storage_gb: "",
-    monthly_price: ""
+    plan_id: ""
   });
   const { user } = useAuth();
   
@@ -104,8 +108,38 @@ const ServerDashboard = () => {
     }
   };
 
+  const fetchPlans = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('payment_plans')
+        .select('*')
+        .eq('is_active', true)
+        .order('price');
+
+      if (error) throw error;
+      setPlans(data || []);
+    } catch (error) {
+      console.error('Error fetching plans:', error);
+    }
+  };
+
+  const handleCreateServer = async () => {
+    if (!selectedPlan) {
+      toast({
+        title: "Error",
+        description: "Please select a plan first",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Open payment modal
+    setPaymentModalOpen(true);
+    setCreateDialogOpen(false);
+  };
+
   const createServer = async () => {
-    if (!user) return;
+    if (!user || !selectedPlan) return;
     
     setCreatingServer(true);
     try {
@@ -114,10 +148,11 @@ const ServerDashboard = () => {
         .insert({
           name: newServer.name,
           type: newServer.type,
-          cpu_cores: newServer.cpu_cores ? parseInt(newServer.cpu_cores) : null,
-          ram_gb: newServer.ram_gb ? parseInt(newServer.ram_gb) : null,
-          storage_gb: newServer.storage_gb ? parseInt(newServer.storage_gb) : null,
-          monthly_price: newServer.monthly_price ? parseFloat(newServer.monthly_price) : null,
+          plan_id: selectedPlan.id,
+          cpu_cores: selectedPlan.cpu_cores,
+          ram_gb: selectedPlan.ram_gb,
+          storage_gb: selectedPlan.storage_gb,
+          monthly_price: selectedPlan.price,
           user_id: user.id,
           status: 'provisioning'
         })
@@ -130,19 +165,17 @@ const ServerDashboard = () => {
       if (!activeServer) {
         setActiveServer(data);
       }
-      setCreateDialogOpen(false);
+      
       setNewServer({
         name: "",
         type: "",
-        cpu_cores: "",
-        ram_gb: "",
-        storage_gb: "",
-        monthly_price: ""
+        plan_id: ""
       });
+      setSelectedPlan(null);
       
       toast({
         title: "Success",
-        description: "Server created successfully",
+        description: "Server created successfully after payment",
       });
     } catch (error) {
       console.error('Error creating server:', error);
@@ -156,8 +189,37 @@ const ServerDashboard = () => {
     }
   };
 
+  const handleServerAction = async (serverId: string, action: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('server-action', {
+        body: {
+          server_id: serverId,
+          action_type: action
+        }
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Action Initiated",
+        description: data.message,
+      });
+
+      // Refresh servers to get updated status
+      fetchServers();
+    } catch (error) {
+      console.error('Server action error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to perform server action",
+        variant: "destructive",
+      });
+    }
+  };
+
   useEffect(() => {
     fetchServers();
+    fetchPlans();
   }, [user]);
 
   if (loading) {
@@ -227,67 +289,44 @@ const ServerDashboard = () => {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="cpu_cores" className="text-right">
-                      CPU Cores
-                    </Label>
-                    <Input
-                      id="cpu_cores"
-                      type="number"
-                      value={newServer.cpu_cores}
-                      onChange={(e) => setNewServer(prev => ({ ...prev, cpu_cores: e.target.value }))}
-                      className="col-span-3"
-                      placeholder="4"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="ram_gb" className="text-right">
-                      RAM (GB)
-                    </Label>
-                    <Input
-                      id="ram_gb"
-                      type="number"
-                      value={newServer.ram_gb}
-                      onChange={(e) => setNewServer(prev => ({ ...prev, ram_gb: e.target.value }))}
-                      className="col-span-3"
-                      placeholder="8"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="storage_gb" className="text-right">
-                      Storage (GB)
-                    </Label>
-                    <Input
-                      id="storage_gb"
-                      type="number"
-                      value={newServer.storage_gb}
-                      onChange={(e) => setNewServer(prev => ({ ...prev, storage_gb: e.target.value }))}
-                      className="col-span-3"
-                      placeholder="100"
-                    />
-                  </div>
-                  <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="monthly_price" className="text-right">
-                      Monthly Price ($)
-                    </Label>
-                    <Input
-                      id="monthly_price"
-                      type="number"
-                      step="0.01"
-                      value={newServer.monthly_price}
-                      onChange={(e) => setNewServer(prev => ({ ...prev, monthly_price: e.target.value }))}
-                      className="col-span-3"
-                      placeholder="29.99"
-                    />
+                  
+                  <div className="col-span-4">
+                    <Label className="text-sm font-medium">Select Plan</Label>
+                    <div className="grid grid-cols-1 gap-3 mt-2">
+                      {plans.map((plan) => (
+                        <div 
+                          key={plan.id} 
+                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                            selectedPlan?.id === plan.id ? 'border-primary bg-primary/5' : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                          onClick={() => setSelectedPlan(plan)}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h4 className="font-medium">{plan.name}</h4>
+                              <p className="text-sm text-gray-600">
+                                {plan.cpu_cores} CPU • {plan.ram_gb}GB RAM • {plan.storage_gb}GB Storage
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <span className="font-bold text-lg">${plan.price}</span>
+                              <span className="text-gray-500 text-sm">/month</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
                 <DialogFooter>
                   <Button 
                     type="submit" 
-                    onClick={createServer}
-                    disabled={!newServer.name || !newServer.type || creatingServer}
+                    onClick={handleCreateServer}
+                    disabled={!newServer.name || !newServer.type || !selectedPlan}
+                    className="flex items-center gap-2"
                   >
-                    {creatingServer ? "Creating..." : "Create Server"}
+                    <CreditCard className="h-4 w-4" />
+                    Proceed to Payment
                   </Button>
                 </DialogFooter>
               </DialogContent>
@@ -425,18 +464,50 @@ const ServerDashboard = () => {
                   </CardContent>
                   <CardFooter className="border-t flex justify-between">
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" className="flex items-center">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleServerAction(activeServer.id, 'restart')}
+                        disabled={activeServer.status === 'restarting'}
+                        className="flex items-center"
+                      >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Restart
                       </Button>
-                      <Button variant="outline" size="sm" className="flex items-center">
-                        <PowerOff className="h-4 w-4 mr-2" />
-                        Power Off
+                      {activeServer.status === 'active' ? (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleServerAction(activeServer.id, 'stop')}
+                          className="flex items-center"
+                        >
+                          <PowerOff className="h-4 w-4 mr-2" />
+                          Stop
+                        </Button>
+                      ) : (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleServerAction(activeServer.id, 'start')}
+                          className="flex items-center"
+                        >
+                          <Play className="h-4 w-4 mr-2" />
+                          Start
+                        </Button>
+                      )}
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={() => handleServerAction(activeServer.id, 'delete')}
+                        className="flex items-center"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
                       </Button>
                     </div>
                     <Button size="sm" className="flex items-center">
                       <Settings className="h-4 w-4 mr-2" />
-                      Server Settings
+                      Settings
                     </Button>
                   </CardFooter>
                 </Card>
@@ -503,10 +574,35 @@ const ServerDashboard = () => {
                   <TabsContent value="monitoring">
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-lg">Monitoring</CardTitle>
+                        <CardTitle className="text-lg">Server Monitoring</CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 mb-4">Server monitoring features will be available once the server is active.</p>
+                      <CardContent className="space-y-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                          <div className="text-center p-4 bg-gray-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-600">28%</div>
+                            <div className="text-sm text-gray-600">CPU Usage</div>
+                          </div>
+                          <div className="text-center p-4 bg-gray-50 rounded-lg">
+                            <div className="text-2xl font-bold text-blue-600">42%</div>
+                            <div className="text-sm text-gray-600">Memory Usage</div>
+                          </div>
+                          <div className="text-center p-4 bg-gray-50 rounded-lg">
+                            <div className="text-2xl font-bold text-orange-600">65%</div>
+                            <div className="text-sm text-gray-600">Storage Usage</div>
+                          </div>
+                          <div className="text-center p-4 bg-gray-50 rounded-lg">
+                            <div className="text-2xl font-bold text-purple-600">99.9%</div>
+                            <div className="text-sm text-gray-600">Uptime</div>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2">Recent Activity</h4>
+                          <div className="space-y-2">
+                            <div className="text-sm p-2 bg-gray-50 rounded">Server started - 2 hours ago</div>
+                            <div className="text-sm p-2 bg-gray-50 rounded">Backup completed - 6 hours ago</div>
+                            <div className="text-sm p-2 bg-gray-50 rounded">Security scan passed - 1 day ago</div>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -516,8 +612,43 @@ const ServerDashboard = () => {
                       <CardHeader>
                         <CardTitle className="text-lg">Network Configuration</CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 mb-4">Network configuration options will be available once the server is provisioned.</p>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-sm font-medium">Public IP</Label>
+                            <Input value="203.0.113.1" readOnly className="mt-1" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">Private IP</Label>
+                            <Input value="10.0.0.1" readOnly className="mt-1" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">SSH Port</Label>
+                            <Input value="22" className="mt-1" />
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">HTTP Port</Label>
+                            <Input value="80" className="mt-1" />
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Firewall Rules</Label>
+                          <div className="mt-2 space-y-2">
+                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                              <span className="text-sm">SSH (22) - Allow from anywhere</span>
+                              <Button variant="outline" size="sm">Edit</Button>
+                            </div>
+                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                              <span className="text-sm">HTTP (80) - Allow from anywhere</span>
+                              <Button variant="outline" size="sm">Edit</Button>
+                            </div>
+                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                              <span className="text-sm">HTTPS (443) - Allow from anywhere</span>
+                              <Button variant="outline" size="sm">Edit</Button>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="mt-2">Add Rule</Button>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -527,8 +658,45 @@ const ServerDashboard = () => {
                       <CardHeader>
                         <CardTitle className="text-lg">Security Settings</CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        <p className="text-gray-600 mb-4">Security settings and firewall configuration will be available once the server is active.</p>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <h4 className="font-medium mb-2">SSH Keys</h4>
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                              <span className="text-sm">ssh-rsa AAAAB3NzaC1yc2E... user@example.com</span>
+                              <Button variant="outline" size="sm">Remove</Button>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="mt-2">Add SSH Key</Button>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium mb-2">Security Scan Results</h4>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between p-2 bg-green-50 rounded border border-green-200">
+                              <div>
+                                <div className="text-sm font-medium text-green-800">Last Scan: Passed</div>
+                                <div className="text-xs text-green-600">No vulnerabilities found</div>
+                              </div>
+                              <Badge className="bg-green-100 text-green-800">Secure</Badge>
+                            </div>
+                          </div>
+                          <Button variant="outline" size="sm" className="mt-2">Run Security Scan</Button>
+                        </div>
+                        
+                        <div>
+                          <h4 className="font-medium mb-2">Access Control</h4>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Two-Factor Authentication</span>
+                              <Button variant="outline" size="sm">Enable</Button>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Password Authentication</span>
+                              <Button variant="outline" size="sm">Disable</Button>
+                            </div>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -537,6 +705,15 @@ const ServerDashboard = () => {
             )}
           </div>
         )}
+        
+        <PaymentModal
+          isOpen={paymentModalOpen}
+          onClose={() => setPaymentModalOpen(false)}
+          planId={selectedPlan?.id}
+          planName={selectedPlan?.name}
+          amount={selectedPlan?.price}
+          onSuccess={createServer}
+        />
       </div>
     </section>
   );

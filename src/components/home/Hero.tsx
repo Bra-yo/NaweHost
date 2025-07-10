@@ -2,10 +2,12 @@
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import TechBackground from "@/components/animations/TechBackground";
 
 const Hero = () => {
   return (
     <div className="relative overflow-hidden bg-gradient-to-b from-white to-gray-50 py-16 md:py-24">
+      <TechBackground />
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div>

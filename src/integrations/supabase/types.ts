@@ -14,6 +14,110 @@ export type Database = {
   }
   public: {
     Tables: {
+      payment_plans: {
+        Row: {
+          cpu_cores: number
+          created_at: string | null
+          currency: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+          network_speed: string | null
+          price: number
+          ram_gb: number
+          storage_gb: number
+          updated_at: string | null
+        }
+        Insert: {
+          cpu_cores: number
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          network_speed?: string | null
+          price: number
+          ram_gb: number
+          storage_gb: number
+          updated_at?: string | null
+        }
+        Update: {
+          cpu_cores?: number
+          created_at?: string | null
+          currency?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          network_speed?: string | null
+          price?: number
+          ram_gb?: number
+          storage_gb?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string | null
+          currency: string | null
+          id: string
+          metadata: Json | null
+          mpesa_checkout_request_id: string | null
+          payment_method: string
+          payment_status: string | null
+          plan_id: string | null
+          stripe_payment_intent_id: string | null
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          mpesa_checkout_request_id?: string | null
+          payment_method: string
+          payment_status?: string | null
+          plan_id?: string | null
+          stripe_payment_intent_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          metadata?: Json | null
+          mpesa_checkout_request_id?: string | null
+          payment_method?: string
+          payment_status?: string | null
+          plan_id?: string | null
+          stripe_payment_intent_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "payment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -47,14 +151,104 @@ export type Database = {
         }
         Relationships: []
       }
+      server_actions: {
+        Row: {
+          action_type: string
+          created_at: string | null
+          details: Json | null
+          id: string
+          server_id: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_type: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          server_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          server_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_actions_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_monitoring: {
+        Row: {
+          cpu_usage: number | null
+          id: string
+          memory_usage: number | null
+          network_in: number | null
+          network_out: number | null
+          recorded_at: string | null
+          server_id: string | null
+          storage_usage: number | null
+          uptime_hours: number | null
+        }
+        Insert: {
+          cpu_usage?: number | null
+          id?: string
+          memory_usage?: number | null
+          network_in?: number | null
+          network_out?: number | null
+          recorded_at?: string | null
+          server_id?: string | null
+          storage_usage?: number | null
+          uptime_hours?: number | null
+        }
+        Update: {
+          cpu_usage?: number | null
+          id?: string
+          memory_usage?: number | null
+          network_in?: number | null
+          network_out?: number | null
+          recorded_at?: string | null
+          server_id?: string | null
+          storage_usage?: number | null
+          uptime_hours?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_monitoring_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       servers: {
         Row: {
           cpu_cores: number | null
           created_at: string
           id: string
+          last_action_at: string | null
           monthly_price: number | null
           name: string
+          network_config: Json | null
+          payment_id: string | null
+          plan_id: string | null
           ram_gb: number | null
+          security_config: Json | null
           status: string
           storage_gb: number | null
           type: string
@@ -65,9 +259,14 @@ export type Database = {
           cpu_cores?: number | null
           created_at?: string
           id?: string
+          last_action_at?: string | null
           monthly_price?: number | null
           name: string
+          network_config?: Json | null
+          payment_id?: string | null
+          plan_id?: string | null
           ram_gb?: number | null
+          security_config?: Json | null
           status?: string
           storage_gb?: number | null
           type: string
@@ -78,16 +277,36 @@ export type Database = {
           cpu_cores?: number | null
           created_at?: string
           id?: string
+          last_action_at?: string | null
           monthly_price?: number | null
           name?: string
+          network_config?: Json | null
+          payment_id?: string | null
+          plan_id?: string | null
           ram_gb?: number | null
+          security_config?: Json | null
           status?: string
           storage_gb?: number | null
           type?: string
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "servers_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "servers_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "payment_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
