@@ -44,7 +44,7 @@ const Navbar = () => {
     if (userProfile?.first_name) {
       return userProfile.first_name;
     }
-    return user?.email?.split('@')[0] || 'User';
+    return 'User';
   };
 
   const handleSignOut = async () => {
